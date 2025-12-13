@@ -1,6 +1,7 @@
 ---
-
+import { Font } from "astro:assets";
 ---
+
 
 <html lang="en">
 	<head>
@@ -8,7 +9,9 @@
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<link rel="stylesheet" href="/src/global.css" />
+		<Font cssVariable="--font-figtree" />
+		<title>Vikram</title>
 	</head>
 	<body>
 		<h1>Vicky owns this</h1>
