@@ -9,12 +9,34 @@ import "../global.css";
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <meta name="viewport" content="width=device-width" />
         <meta name="generator" content={Astro.generator} />
+        <meta
+            name="description"
+            content="Personal site of Vikram, a frontend engineer building clean and intrinsic experiences for the modern web"
+        />
+        <meta name="author" content="Vikram" />
+        <link rel="canonical" href="https://vikram.wiki/" />
+        <meta http-equiv="content-language" content="en" />
         <Font cssVariable="--font-figtree" />
-        <title>Vikram</title>
+        <title>Vikram | Design Technologist</title>
     </head>
     <body>
-        <h1>WIP</h1>
-        <p>I promise I'm gonna work on this soon</p>
+        <main>
+            <h1>WIP</h1>
+            <p>I promise I'm gonna work on this soon</p>
+        </main>
+        <script type="application/ld+json">
+            {
+                "@context": "https://schema.org",
+                "@type": "Person",
+                "name": "Vikram",
+                "url": "https://vikram.wiki",
+                "jobTitle": "Design Technologist",
+                "sameAs": [
+                    "https://github.com/vikram-hegde",
+                    "https://www.linkedin.com/in/vikramcodes"
+                ]
+            }
+        </script>
     </body>
 </html>
 
@@ -26,7 +48,7 @@ import "../global.css";
         place-content: center;
         text-align: center;
     }
-    
+
     p {
         font-size: 1.25rem;
     }
