@@ -1,19 +1,33 @@
 ---
 import { Font } from "astro:assets";
+import "../global.css";
 ---
 
-
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<link rel="stylesheet" href="/src/global.css" />
-		<Font cssVariable="--font-figtree" />
-		<title>Vikram</title>
-	</head>
-	<body>
-		<h1>Vicky owns this</h1>
-	</body>
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width" />
+        <meta name="generator" content={Astro.generator} />
+        <Font cssVariable="--font-figtree" />
+        <title>Vikram</title>
+    </head>
+    <body>
+        <h1>WIP</h1>
+        <p>I promise I'm gonna work on this soon</p>
+    </body>
 </html>
+
+<!-- Temporary styles -->
+<style>
+    body {
+        min-height: 100dvh;
+        display: grid;
+        place-content: center;
+        text-align: center;
+    }
+    
+    p {
+        font-size: 1.25rem;
+    }
+</style>
