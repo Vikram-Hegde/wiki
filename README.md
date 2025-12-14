@@ -2,7 +2,7 @@
 
 Personal site of [Vikram](https://vikram.wiki/), a frontend engineer and design technologist building clean and intrinsic experiences for the modern web.
 
-####️ Stack
+### Stack
 
 - **Framework:** [Astro](https://astro.build/)
 - **Styling:** Vanilla CSS
