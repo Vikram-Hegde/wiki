@@ -7,5 +7,5 @@ Personal site of [Vikram](https://vikram.wiki/), a frontend engineer and design 
 - **Framework:** [Astro](https://astro.build/)
 - **Styling:** Vanilla CSS
 - **Typography:** 
-  - **Body:** [Figtree](https://fonts.google.com/specimen/Figtree) via Astro's experimental font loader.
+  - **Body:** [Figtree](https://fonts.google.com/specimen/Figtree)
   - **Headings:** Serif stack (Didot, Bodoni MT, etc.).
