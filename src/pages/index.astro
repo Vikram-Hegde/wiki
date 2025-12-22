@@ -17,12 +17,24 @@ import "../global.css";
         <link rel="canonical" href="https://vikram.wiki/" />
         <meta http-equiv="content-language" content="en" />
         <Font cssVariable="--font-figtree" />
+        <Font cssVariable="--font-playfair-display" />
         <title>Vikram | Frontend Engineer & Design Technologist</title>
     </head>
     <body>
+        <header>
+            <a href="https://github.com/vikram-hegde">Github</a>
+        </header>
         <main>
-            <h1>WIP</h1>
-            <p>I promise I'm gonna work on this soon</p>
+            <h1>Hey, I'm Vikram</h1>
+            <p>
+                I’m a frontend engineer and design technologist based in Bengaluru. I like building clean, fast web experiences and obsessing over the small details that make products feel right.
+            </p>
+            <p>
+                Most of my work lives in the frontend world: React,  CSS, design systems, and tooling. I’m especially interested in intrinsic web design: letting the web do what it’s good at. If something feels clunky for users or developers, I want to fix it.
+            </p>
+            <p>
+                This site is where I share things I’m learning, stuff I’m building, and thoughts on web dev and DX, just things I actually use or care about.
+            </p>
         </main>
         <script is:inline type="application/ld+json">
             {
@@ -42,14 +54,38 @@ import "../global.css";
 
 <!-- Temporary styles -->
 <style>
+
     body {
-        min-height: 100dvh;
-        display: grid;
-        place-content: center;
-        text-align: center;
+        width: min(70ch, calc(100% - 3rem));
+        margin-inline: auto;
+        padding-block-start: 10rem;
+    }
+    
+    header {
+        display: flex;
+        
+        a {
+            margin-inline-start: auto;
+        }
+    }
+    
+    a {
+        text-underline-offset: 5px;
+        color: white;
+        text-decoration-color: color-mix(in srgb, currentColor 30%, transparent 70%);
+        
+        &:hover {
+            text-decoration-color: color-mix(in srgb, currentColor 50%, transparent 50%);
+        }
+    }
+    
+    h1 {
+        margin-block-end: 1em;
     }
 
     p {
-        font-size: 1.25rem;
+        margin-block: 0.75em;
+        line-height: 1.5;
+        text-wrap: pretty;
     }
 </style>
