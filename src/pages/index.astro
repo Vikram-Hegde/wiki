@@ -22,6 +22,7 @@ import "../global.css";
     </head>
     <body>
         <header>
+            <a href="https://x.com/_vikramhegde_">X</a>
             <a href="https://github.com/vikram-hegde">Github</a>
         </header>
         <main>
@@ -30,10 +31,10 @@ import "../global.css";
                 I’m a frontend engineer and design technologist based in Bengaluru. I like building clean, fast web experiences and obsessing over the small details that make products feel right.
             </p>
             <p>
-                Most of my work lives in the frontend world: React,  CSS, design systems, and tooling. I’m especially interested in intrinsic web design: letting the web do what it’s good at. If something feels clunky for users or developers, I want to fix it.
+                Most of my work lives in the frontend world: React, CSS, design systems, and tooling. I’m especially interested in intrinsic web design and letting the web do what it’s good at. If something feels clunky for users or developers, I want to fix it.
             </p>
             <p>
-                This site is where I share things I’m learning, stuff I’m building, and thoughts on web dev and DX, just things I actually use or care about.
+                This site is where I plan to share things I’m learning, stuff I’m building, and thoughts on web dev and DX. Just the things I actually use or care about.
             </p>
         </main>
         <script is:inline type="application/ld+json">
@@ -63,8 +64,10 @@ import "../global.css";
     
     header {
         display: flex;
+        gap: 1rem;
+        margin-block-end: 1.5rem;
         
-        a {
+        a:first-child {
             margin-inline-start: auto;
         }
     }
@@ -88,4 +91,5 @@ import "../global.css";
         line-height: 1.5;
         text-wrap: pretty;
     }
+    
 </style>
