@@ -9,13 +9,13 @@ export default defineConfig({
         name: "Figtree",
         cssVariable: "--font-figtree",
         provider: fontProviders.google(),
-        weights: ["300 900"],
+        weights: [400],
       },
       {
         name: "Playfair Display",
         cssVariable: "--font-playfair-display",
         provider: fontProviders.google(),
-        weights: [400, 500, 600]
+        weights: [600]
       }
     ]
   }
