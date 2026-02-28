@@ -18,25 +18,95 @@ import "../global.css";
         <meta http-equiv="content-language" content="en" />
         <Font cssVariable="--font-figtree" preload />
         <Font cssVariable="--font-playfair-display" preload />
+        <Font cssVariable="--font-jetbrains-mono" preload />
         <title>Vikram | Design Technologist</title>
     </head>
     <body>
-        <header>
-            <a href="https://x.com/_vikramhegde_">X</a>
-            <a href="https://github.com/vikram-hegde">Github</a>
-        </header>
-        <main>
-            <h1>Hey, I'm Vikram</h1>
-            <p>
-                I’m a frontend engineer and design technologist based in Bengaluru. I like building clean, fast web experiences and obsessing over the small details that make products feel right.
-            </p>
-            <p>
-                Most of my work lives in the frontend world: React, CSS, design systems, and tooling. I’m especially interested in intrinsic web design and letting the web do what it’s good at. If something feels clunky for users or developers, I want to fix it.
-            </p>
-            <p>
-                This site is where I plan to share things I’m learning, stuff I’m building, and thoughts on web dev and DX. Just the things I actually use or care about.
-            </p>
-        </main>
+        <div class="page">
+            <div class="glow" aria-hidden="true"></div>
+            <div class="grid-pattern" aria-hidden="true"></div>
+
+            <div class="wrapper">
+                <header>
+                    <a href="/" class="logo">Vikram</a>
+                    <nav>
+                        <a href="#work">Work</a>
+                        <a href="#writing">Writing</a>
+                        <a href="#about">About</a>
+                    </nav>
+                </header>
+
+                <main>
+                    <section class="hero">
+                        <div class="badges">
+                            <span class="badge">Design Technologist</span>
+                        </div>
+                        <h1>Hey, I'm Vikram</h1>
+                        <p class="hero-sub">
+                            Frontend engineer building clean, fast web experiences — obsessing over the small details that make products feel right.
+                        </p>
+                    </section>
+
+                    <section class="section" id="about">
+                        <div class="section-label">
+                            <span class="dot"></span>
+                            <span class="label-text">About</span>
+                        </div>
+                        <p>
+                            Most of my work lives in the frontend world — React, CSS, design systems, and tooling. I'm especially interested in intrinsic web design and letting the web do what it's good at.
+                        </p>
+                        <p class="secondary">
+                            If something feels clunky for users or developers, I want to fix it. This site is where I share things I'm learning, stuff I'm building, and thoughts on web dev and DX.
+                        </p>
+                    </section>
+
+                    <section class="section">
+                        <div class="section-label">
+                            <span class="dot"></span>
+                            <span class="label-text">Stack</span>
+                        </div>
+                        <div class="chips">
+                            <span class="chip">React</span>
+                            <span class="chip">CSS</span>
+                            <span class="chip">Design Systems</span>
+                            <span class="chip">TypeScript</span>
+                            <span class="chip">Astro</span>
+                            <span class="chip">Tooling & DX</span>
+                        </div>
+                    </section>
+
+                    <section class="section section--no-border">
+                        <div class="section-label">
+                            <span class="dot"></span>
+                            <span class="label-text">Connect</span>
+                        </div>
+                        <div class="connect-cards">
+                            <a href="https://x.com/_vikramhegde_" class="connect-card" target="_blank" rel="noopener noreferrer">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16h-4.267z"/><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/></svg>
+                                <span class="connect-name">X / Twitter</span>
+                                <span class="connect-handle">@_vikramhegde_</span>
+                            </a>
+                            <a href="https://github.com/vikram-hegde" class="connect-card" target="_blank" rel="noopener noreferrer">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                                <span class="connect-name">GitHub</span>
+                                <span class="connect-handle">vikram-hegde</span>
+                            </a>
+                            <a href="https://www.linkedin.com/in/vikramcodes" class="connect-card" target="_blank" rel="noopener noreferrer">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+                                <span class="connect-name">LinkedIn</span>
+                                <span class="connect-handle">vikramcodes</span>
+                            </a>
+                        </div>
+                    </section>
+                </main>
+
+                <footer>
+                    <span>&copy; 2026 Vikram</span>
+                    <span>Built with Astro</span>
+                </footer>
+            </div>
+        </div>
+
         <script is:inline type="application/ld+json">
             {
                 "@context": "https://schema.org",
@@ -53,43 +123,266 @@ import "../global.css";
     </body>
 </html>
 
-<!-- Temporary styles -->
 <style>
-
-    body {
-        width: min(70ch, calc(100% - 3rem));
-        margin-inline: auto;
-        padding-block-start: 10rem;
+    /* Page shell */
+    .page {
+        position: relative;
+        overflow: hidden;
+        min-height: 100vh;
+        min-height: 100dvh;
     }
-    
+
+    /* Vercel glow */
+    .glow {
+        position: absolute;
+        top: -120px;
+        left: 50%;
+        translate: -50% 0;
+        width: min(900px, 100vw);
+        height: 450px;
+        border-radius: 50%;
+        background: radial-gradient(
+            ellipse at center,
+            oklch(0.7 0.15 160 / 0.07) 0%,
+            oklch(0.6 0.15 240 / 0.04) 40%,
+            transparent 70%
+        );
+        filter: blur(60px);
+        pointer-events: none;
+    }
+
+    /* Subtle grid */
+    .grid-pattern {
+        position: absolute;
+        inset: 0;
+        height: 400px;
+        background-image:
+            linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        background-size: 64px 64px;
+        mask-image: linear-gradient(to bottom, black, transparent);
+        pointer-events: none;
+    }
+
+    /* Wrapper */
+    .wrapper {
+        position: relative;
+        width: min(var(--wrapper-width), calc(100% - var(--wrapper-padding) * 2));
+        margin-inline: auto;
+        padding-block: 3rem;
+    }
+
+    /* Header */
     header {
         display: flex;
-        gap: 1rem;
-        margin-block-end: 1.5rem;
-        
-        a:first-child {
-            margin-inline-start: auto;
-        }
-    }
-    
-    a {
-        text-underline-offset: 5px;
-        color: white;
-        text-decoration-color: color-mix(in srgb, currentColor 30%, transparent 70%);
-        
-        &:hover {
-            text-decoration-color: color-mix(in srgb, currentColor 50%, transparent 50%);
-        }
-    }
-    
-    h1 {
-        margin-block-end: 1em;
+        align-items: center;
+        justify-content: space-between;
+        padding-block-end: 1rem;
+        border-block-end: 1px solid var(--color-border);
     }
 
-    p {
-        margin-block: 0.75em;
-        line-height: 1.5;
+    .logo {
+        font-family: var(--font-serif);
+        font-size: 0.9375rem;
+        font-weight: 500;
+        color: var(--color-text-primary);
+    }
+
+    nav {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    nav a {
+        font-size: 0.875rem;
+        color: var(--color-text-secondary);
+        transition: color 0.2s;
+
+        &:hover {
+            color: var(--color-text-primary);
+        }
+    }
+
+    /* Hero */
+    .hero {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding-block: 5rem 4rem;
+        border-block-end: 1px solid var(--color-border);
+    }
+
+    .badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.625rem;
+    }
+
+    .badge {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--color-text-secondary);
+        letter-spacing: 0.03em;
+        padding: 0.3125rem 0.875rem;
+        border-radius: 999px;
+        border: 1px solid var(--color-border-hover);
+        background-color: var(--color-surface);
+    }
+
+    h1 {
+        font-size: clamp(2.25rem, 5vw, 3.625rem);
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        color: var(--color-text-primary);
+    }
+
+    .hero-sub {
+        font-size: clamp(0.9375rem, 2vw, 1.125rem);
+        line-height: 1.7;
+        color: var(--color-text-secondary);
+        max-width: 620px;
+    }
+
+    /* Sections */
+    .section {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        padding-block: 3.5rem;
+        border-block-end: 1px solid var(--color-border);
+    }
+
+    .section--no-border {
+        border-block-end: none;
+    }
+
+    .section-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background-color: var(--color-text-secondary);
+    }
+
+    .label-text {
+        font-family: var(--font-mono);
+        font-size: 0.6875rem;
+        color: var(--color-text-secondary);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    .section p {
+        font-size: 1rem;
+        line-height: 1.7;
+        color: var(--color-text-primary);
         text-wrap: pretty;
     }
-    
+
+    .section p.secondary {
+        color: var(--color-text-secondary);
+    }
+
+    /* Stack chips */
+    .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.625rem;
+    }
+
+    .chip {
+        font-size: 0.8125rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--color-border-hover);
+        background-color: var(--color-surface);
+        transition: background-color 0.2s, border-color 0.2s;
+
+        &:hover {
+            background-color: var(--color-surface-hover);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+    }
+
+    /* Connect cards */
+    .connect-cards {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .connect-card {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 1rem 1.25rem;
+        border-radius: 0.625rem;
+        border: 1px solid var(--color-border-hover);
+        background-color: var(--color-surface);
+        flex: 1;
+        transition: background-color 0.2s, border-color 0.2s;
+
+        &:hover {
+            background-color: var(--color-surface-hover);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+    }
+
+    .connect-name {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--color-text-primary);
+    }
+
+    .connect-handle {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+    }
+
+    /* Footer */
+    footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-block-start: 1.5rem;
+        border-block-start: 1px solid var(--color-border);
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+        letter-spacing: 0.03em;
+    }
+
+    /* Mobile */
+    @media (max-width: 640px) {
+        .hero {
+            padding-block: 3rem 2.5rem;
+        }
+
+        .section {
+            padding-block: 2.25rem;
+        }
+
+        .connect-cards {
+            flex-direction: column;
+        }
+
+        .connect-card {
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .connect-handle {
+            margin-inline-start: auto;
+        }
+
+        nav {
+            gap: 1rem;
+        }
+    }
 </style>
