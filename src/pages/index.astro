@@ -141,7 +141,7 @@ function pluralize(n: number, singular: string, plural: string): string {
     <head>
         <meta charset="utf-8" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <meta name="viewport" content="width=device-width" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta
             name="description"
             content="Personal site of Vikram, a frontend engineer building clean and intrinsic experiences for the modern web"
@@ -155,19 +155,23 @@ function pluralize(n: number, singular: string, plural: string): string {
     <body>
         <div class="page">
             <nav class="nav">
-                <a href="/" class="nav__logo">VIKRAM/</a>
-                <ul class="nav__links">
-                    <li><a href="#work" class="nav__link">[01] Work</a></li>
-                    <li><a href="#writing" class="nav__link">[02] Writing</a></li>
-                    <li><a href="#about" class="nav__link">[03] About</a></li>
-                    <li><a href="#contact" class="nav__link nav__link--active">[04] Contact →</a></li>
-                </ul>
+                <div class="nav__inner">
+                    <a href="/" class="nav__logo">VIKRAM/</a>
+                    <ul class="nav__links">
+                        <li><a href="#work" class="nav__link">[01] Work</a></li>
+                        <li><a href="#writing" class="nav__link">[02] Writing</a></li>
+                        <li><a href="#about" class="nav__link">[03] About</a></li>
+                        <li><a href="#contact" class="nav__link nav__link--active">[04] Contact →</a></li>
+                    </ul>
+                </div>
             </nav>
 
             <main>
                 <section class="hero-label">
-                    <div>// HERO / 001</div>
-                    <div class="hero-label__dim">EST. 2018 / BANGALORE, IN / UTC+5:30</div>
+                    <div class="hero-label__inner">
+                        <div>// HERO / 001</div>
+                        <div class="hero-label__dim">EST. 2018 / BANGALORE, IN / UTC+5:30</div>
+                    </div>
                 </section>
 
                 <section class="hero" aria-label="Introduction">
@@ -177,32 +181,36 @@ function pluralize(n: number, singular: string, plural: string): string {
                 </section>
 
                 <section class="focus" aria-label="Current focus">
-                    <div class="focus__left">
-                        <span>// FOCUS</span>
-                        <span class="focus__dim">intrinsic web design, container queries, type systems</span>
-                    </div>
-                    <div class="focus__right">
-                        <span class="focus__dim">UPDATED {BUILD_DATE_HUMAN}</span>
-                        <span class="focus__chip">{gitHash}{gitDirty ? "*" : ""}</span>
+                    <div class="focus__inner">
+                        <div class="focus__left">
+                            <span>// FOCUS</span>
+                            <span class="focus__dim">intrinsic web design, container queries, type systems</span>
+                        </div>
+                        <div class="focus__right">
+                            <span class="focus__dim">UPDATED {BUILD_DATE_HUMAN}</span>
+                            <span class="focus__chip">{gitHash}{gitDirty ? "*" : ""}</span>
+                        </div>
                     </div>
                 </section>
 
                 <section class="bio" id="about" aria-labelledby="bio-label">
-                    <div class="bio__label">
-                        <div id="bio-label">BIO</div>
-                        <div class="bio__sub">→ 002</div>
-                    </div>
-                    <div class="bio__body">
-                        <p>
-                            Vikram Hegde. Frontend engineer based in Bangalore. Writes
-                            React, fights with CSS, ships small libraries, and redesigns
-                            this site on a quarterly basis.
-                        </p>
-                        <p class="bio__muted">
-                            Currently obsessed with intrinsic web design, container
-                            queries, and the small interactions that make a product feel
-                            considered. TypeScript by day, plain HTML by preference.
-                        </p>
+                    <div class="bio__inner">
+                        <div class="bio__label">
+                            <div id="bio-label">BIO</div>
+                            <div class="bio__sub">→ 002</div>
+                        </div>
+                        <div class="bio__body">
+                            <p>
+                                Vikram Hegde. Frontend engineer based in Bangalore. Writes
+                                React, fights with CSS, ships small libraries, and redesigns
+                                this site on a quarterly basis.
+                            </p>
+                            <p class="bio__muted">
+                                Currently obsessed with intrinsic web design, container
+                                queries, and the small interactions that make a product feel
+                                considered. TypeScript by day, plain HTML by preference.
+                            </p>
+                        </div>
                     </div>
                 </section>
 
@@ -420,14 +428,16 @@ function pluralize(n: number, singular: string, plural: string): string {
             </main>
 
             <footer class="footer">
-                <div class="footer__left">
-                    <span>© {BUILD_YEAR} VIKRAM HEGDE</span>
-                    <span class="footer__dim">BUILT WITH ASTRO</span>
-                    <span class="footer__dim">NO JS FRAMEWORKS WERE HARMED</span>
-                </div>
-                <div class="footer__right">
-                    <span class="footer__dim">EOF</span>
-                    <span class="footer__chip">{gitHash}{gitDirty ? "*" : ""}</span>
+                <div class="footer__inner">
+                    <div class="footer__left">
+                        <span>© {BUILD_YEAR} VIKRAM HEGDE</span>
+                        <span class="footer__dim">BUILT WITH ASTRO</span>
+                        <span class="footer__dim">NO JS FRAMEWORKS WERE HARMED</span>
+                    </div>
+                    <div class="footer__right">
+                        <span class="footer__dim">EOF</span>
+                        <span class="footer__chip">{gitHash}{gitDirty ? "*" : ""}</span>
+                    </div>
                 </div>
             </footer>
         </div>
@@ -462,6 +472,10 @@ function pluralize(n: number, singular: string, plural: string): string {
     .nav {
         padding: 24px var(--wrapper-padding);
         border-bottom: 2px solid var(--border);
+        container-type: inline-size;
+    }
+
+    .nav__inner {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -488,11 +502,11 @@ function pluralize(n: number, singular: string, plural: string): string {
         text-transform: uppercase;
         letter-spacing: 0.04em;
         transition: background-color 0.1s, color 0.1s;
+        margin-left: -1px;
     }
 
-    .nav__link + .nav__link,
-    .nav__links li + li .nav__link {
-        border-left: none;
+    .nav__links li:first-child .nav__link {
+        margin-left: 0;
     }
 
     .nav__link:hover {
@@ -511,14 +525,18 @@ function pluralize(n: number, singular: string, plural: string): string {
        ─────────────────────────────────────────────────────────────── */
     .hero-label {
         padding: 48px var(--wrapper-padding) 32px;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
         border-bottom: 1px solid var(--border);
         font-size: 12px;
         letter-spacing: 0.06em;
         text-transform: uppercase;
         font-weight: 600;
+        container-type: inline-size;
+    }
+
+    .hero-label__inner {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
     }
 
     .hero-label__dim {
@@ -528,6 +546,7 @@ function pluralize(n: number, singular: string, plural: string): string {
 
     .hero {
         padding: 0 var(--wrapper-padding) 40px;
+        container-type: inline-size;
     }
 
     .hero__title {
@@ -544,14 +563,18 @@ function pluralize(n: number, singular: string, plural: string): string {
        ─────────────────────────────────────────────────────────────── */
     .focus {
         border-top: 2px solid var(--border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
         padding: 14px var(--wrapper-padding);
         font-size: 12px;
         font-weight: 600;
         letter-spacing: 0.04em;
         text-transform: uppercase;
+        container-type: inline-size;
+    }
+
+    .focus__inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 
     .focus__left,
@@ -576,6 +599,10 @@ function pluralize(n: number, singular: string, plural: string): string {
        ─────────────────────────────────────────────────────────────── */
     .bio {
         border-bottom: 2px solid var(--border);
+        container-type: inline-size;
+    }
+
+    .bio__inner {
         display: flex;
         align-items: stretch;
     }
@@ -646,6 +673,7 @@ function pluralize(n: number, singular: string, plural: string): string {
        ─────────────────────────────────────────────────────────────── */
     .now__table {
         border-top: 2px solid var(--border);
+        container-type: inline-size;
     }
 
     .now__row {
@@ -781,6 +809,7 @@ function pluralize(n: number, singular: string, plural: string): string {
        ─────────────────────────────────────────────────────────────── */
     .stack__table {
         border-top: 2px solid var(--border);
+        container-type: inline-size;
     }
 
     .stack__row {
@@ -938,6 +967,10 @@ function pluralize(n: number, singular: string, plural: string): string {
     /* ───────────────────────────────────────────────────────────────
        § CONTACT.LINKS
        ─────────────────────────────────────────────────────────────── */
+    .contact {
+        container-type: inline-size;
+    }
+
     .contact__grid {
         border-top: 2px solid var(--border);
         display: flex;
@@ -990,6 +1023,7 @@ function pluralize(n: number, singular: string, plural: string): string {
        ─────────────────────────────────────────────────────────────── */
     .eof {
         padding: 24px var(--wrapper-padding) 0;
+        container-type: inline-size;
     }
 
     .eof__pre {
@@ -1009,13 +1043,17 @@ function pluralize(n: number, singular: string, plural: string): string {
         background-color: var(--inverse-bg);
         color: var(--inverse-fg);
         padding: 20px var(--wrapper-padding);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
         font-size: 12px;
         font-weight: 600;
         letter-spacing: 0.04em;
         text-transform: uppercase;
+        container-type: inline-size;
+    }
+
+    .footer__inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 
     .footer__left,
@@ -1037,41 +1075,65 @@ function pluralize(n: number, singular: string, plural: string): string {
     }
 
     /* ───────────────────────────────────────────────────────────────
-       RESPONSIVE
+       RESPONSIVE — viewport media queries
+       (container queries can't style the queried element itself, so
+       each section adapts to the viewport width instead)
        ─────────────────────────────────────────────────────────────── */
-    @media (max-width: 900px) {
-        .meta-strip {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-        }
 
-        .nav {
+    /* Nav: stack logo above links when the nav is narrow */
+    @container (max-width: 640px) {
+        .nav__inner {
             flex-direction: column;
             align-items: flex-start;
             gap: 16px;
         }
-
         .nav__links {
             flex-wrap: wrap;
+            width: 100%;
         }
+        .nav__link {
+            margin-top: -1px;
+            line-height: 2lh;
+        }
+        .nav__links li:first-child .nav__link {
+            margin-top: 0;
+        }
+    }
 
+    /* Hero: shrink the title on very narrow phones so "Big opinions."
+       doesn't break across two lines */
+    @container (max-width: 400px) {
+        .hero__title {
+            font-size: 40px;
+        }
+    }
+
+    /* Hero label: stack rows when the hero-label is narrow */
+    @container (max-width: 720px) {
+        .hero-label__inner {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
         .hero-label {
+            font-size: 11px;
+        }
+    }
+
+    /* Focus bar: stack rows when the focus bar is narrow */
+    @container (max-width: 720px) {
+        .focus__inner {
             flex-direction: column;
             align-items: flex-start;
             gap: 8px;
         }
+    }
 
-        .focus {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-        }
-
-        .bio {
+    /* Bio: collapse the sidebar above the body when the bio is narrow */
+    @container (max-width: 720px) {
+        .bio__inner {
             flex-direction: column;
         }
-
         .bio__label {
             width: 100%;
             border-right: none;
@@ -1080,17 +1142,31 @@ function pluralize(n: number, singular: string, plural: string): string {
             gap: 16px;
             align-items: center;
         }
-
         .bio__body {
+            flex: none;
             flex-direction: column;
             gap: 16px;
         }
+        .bio__body p {
+            flex: none;
+        }
+    }
 
+    /* Section header: stack h2 above meta on narrow viewports */
+    @media (max-width: 520px) {
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
+    }
+
+    /* § NOW.LOG: stack the 4 cells vertically when the table is narrow */
+    @container (max-width: 900px) {
         .now__row {
             flex-wrap: wrap;
             min-height: 0;
         }
-
         .now__cell--status {
             width: 100%;
             border-right: none;
@@ -1100,118 +1176,129 @@ function pluralize(n: number, singular: string, plural: string): string {
             justify-content: space-between;
             padding: 12px 16px;
         }
-
         .now__cell--project {
             width: 100%;
             border-right: none;
             border-bottom: 1px solid var(--border);
             padding: 16px;
         }
-
         .now__cell--what {
             border-right: none;
             border-bottom: 1px solid var(--border);
             padding: 16px;
         }
-
         .now__cell--since {
             width: 100%;
             align-items: flex-start;
             padding: 12px 16px;
         }
-
         .now__cell-value--right,
         .now__cell-label--right {
             text-align: left;
         }
+    }
 
+    /* § STACK.MD: stack the cells when the table is narrow */
+    @container (max-width: 800px) {
         .stack__row {
             flex-wrap: wrap;
             min-height: 0;
         }
-
         .stack__num {
             width: 60px;
             border-right: none;
-            border-bottom: 1px solid var(--border);
             height: 48px;
         }
-
         .stack__name {
             width: auto;
             flex: 1;
-            border-bottom: 1px solid var(--border);
+            border-right: none;
+            border-top: 1px solid var(--border);
             height: 48px;
             font-size: 20px;
         }
-
         .stack__desc {
             width: 100%;
             padding: 12px 16px;
-            border-bottom: 1px solid var(--border);
+            border-top: 1px solid var(--border);
+            display: block;
+            height: auto;
         }
-
+        .stack__desc-active {
+            display: inline-block;
+        }
         .stack__year {
             width: 100%;
             text-align: left;
             border-left: none;
-            border-bottom: 1px solid var(--border);
+            border-top: 1px solid var(--border);
             justify-content: flex-start;
             padding: 12px 16px;
         }
-
         .stack__row:last-child .stack__year {
-            border-bottom: none;
+            border-top: none;
         }
+    }
 
+    /* § WRITING.LOG: stack the columns when the list is narrow */
+    @media (max-width: 640px) {
         .writing__row {
             flex-wrap: wrap;
             padding: 16px 0;
         }
-
         .writing__date {
             width: auto;
             padding: 0 16px;
         }
-
         .writing__badge {
             margin: 0 16px 0 0;
         }
-
         .writing__title {
             width: 100%;
             padding: 12px 16px 0;
             order: 5;
         }
-
         .writing__meta {
             width: auto;
             padding: 0 16px;
         }
-
         .writing__arrow {
             width: auto;
             padding: 0 16px;
         }
+    }
 
+    /* § CONTACT.LINKS: stack cards vertically when the section is narrow */
+    @container (max-width: 720px) {
         .contact__grid {
             flex-direction: column;
         }
-
         .contact__card {
             border-right: none;
             border-bottom: 2px solid var(--border);
             min-height: 160px;
         }
-
         .contact__card:last-child {
             border-bottom: none;
         }
+    }
 
-        .footer {
+    /* Footer: stack columns when the footer is narrow */
+    @container (max-width: 520px) {
+        .footer__inner {
             flex-direction: column;
             align-items: flex-start;
             gap: 12px;
+        }
+    }
+
+    /* EOF: wrap the ASCII banner on very narrow screens so it
+       doesn't push the page wider than the viewport */
+    @container (max-width: 480px) {
+        .eof__pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 10px;
         }
     }
 </style>

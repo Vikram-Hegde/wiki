@@ -40,6 +40,7 @@
         min-height: stretch;
         background-color: var(--bg);
         color: var(--fg);
+        overflow-x: hidden;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         font-feature-settings: "ss01", "ss02";
@@ -83,6 +84,12 @@
         --font-mono: var(--font-jetbrains-mono), ui-monospace, "JetBrains Mono", monospace;
 
         --wrapper-padding: 32px;
+    }
+
+    @media (max-width: 600px) {
+        :root {
+            --wrapper-padding: 16px;
+        }
     }
 
 }
