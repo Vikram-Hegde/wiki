@@ -129,7 +129,7 @@ function deriveStatus(repo: Repo): string {
     if (days < 30) return "SHIPPING";
     if (days < 180) return "MAINTAIN";
     if (days < 365) return "STALE";
-    return "ARCHIVED";
+    return "DORMANT";
 }
 
 function pluralize(n: number, singular: string, plural: string): string {
@@ -154,18 +154,6 @@ function pluralize(n: number, singular: string, plural: string): string {
     </head>
     <body>
         <div class="page">
-            <header class="meta-strip">
-                <div class="meta-strip__left">
-                    <span>vikram.wiki/</span>
-                    <span class="meta-strip__dim">index.html</span>
-                </div>
-                <div class="meta-strip__right">
-                    <span class="meta-strip__dim">[{BUILD_DATE_ISO}]</span>
-                    <span class="meta-strip__dim">[{BUILD_TIME_HUMAN}]</span>
-                    <span class="meta-strip__badge">NO COOKIES</span>
-                </div>
-            </header>
-
             <nav class="nav">
                 <a href="/" class="nav__logo">VIKRAM/</a>
                 <ul class="nav__links">
@@ -469,48 +457,16 @@ function pluralize(n: number, singular: string, plural: string): string {
     }
 
     /* ───────────────────────────────────────────────────────────────
-       META STRIP
-       ─────────────────────────────────────────────────────────────── */
-    .meta-strip {
-        background-color: var(--inverse-bg);
-        color: var(--inverse-fg);
-        padding: 14px var(--wrapper-padding);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 12px;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        font-weight: 600;
-    }
-
-    .meta-strip__left,
-    .meta-strip__right {
-        display: flex;
-        gap: 24px;
-        align-items: center;
-    }
-
-    .meta-strip__dim {
-        opacity: 0.6;
-    }
-
-    .meta-strip__badge {
-        background-color: var(--inverse-fg);
-        color: var(--inverse-bg);
-        padding: 2px 8px;
-        font-weight: 700;
-    }
-
-    /* ───────────────────────────────────────────────────────────────
        NAV
        ─────────────────────────────────────────────────────────────── */
     .nav {
         padding: 24px var(--wrapper-padding);
         border-bottom: 2px solid var(--border);
         display: flex;
-        align-items: flex-end;
+        align-items: center;
         justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
     }
 
     .nav__logo {
