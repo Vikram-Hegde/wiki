@@ -23,25 +23,31 @@
 
 @layer base {
 
+    :root {
+        color-scheme: light;
+    }
+
     html {
-        color-scheme: dark;
         height: 100%;
         height: stretch;
     }
 
     body {
-        font-family: var(--font-figtree), sans-serif;
+        font-family: var(--font-jetbrains-mono), ui-monospace, "JetBrains Mono", monospace;
+        font-size: 15px;
+        line-height: 1.5;
         min-height: 100%;
         min-height: stretch;
-        background-color: #000;
-        color: #ededed;
+        background-color: var(--bg);
+        color: var(--fg);
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        font-feature-settings: "ss01", "ss02";
     }
 
-    h1, h2, h3, h4, h5, h6 {
-        font-family: var(--font-playfair-display), serif;
-        font-weight: normal;
+    ::selection {
+        background-color: var(--fg);
+        color: var(--bg);
     }
 
 }
@@ -49,21 +55,34 @@
 @layer tokens {
 
     :root {
-        --color-bg: #000000;
-        --color-text-primary: #ededed;
-        --color-text-secondary: #a1a1aa;
-        --color-text-muted: #555555;
-        --color-border: rgba(255, 255, 255, 0.08);
-        --color-border-hover: rgba(255, 255, 255, 0.15);
-        --color-surface: rgba(255, 255, 255, 0.03);
-        --color-surface-hover: rgba(255, 255, 255, 0.06);
+        --bg: #FFFFFF;
+        --fg: #000000;
+        --fg-muted: rgba(0, 0, 0, 0.6);
+        --fg-faint: rgba(0, 0, 0, 0.35);
+        --border: #000000;
+        --border-subtle: rgba(0, 0, 0, 0.2);
+        --inverse-bg: #000000;
+        --inverse-fg: #FFFFFF;
+    }
 
-        --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
-        --font-sans: var(--font-figtree), sans-serif;
-        --font-serif: var(--font-playfair-display), serif;
+    @media (prefers-color-scheme: dark) {
+        :root {
+            color-scheme: dark;
+            --bg: #0A0A0A;
+            --fg: #F5F5F5;
+            --fg-muted: rgba(245, 245, 245, 0.6);
+            --fg-faint: rgba(245, 245, 245, 0.35);
+            --border: #F5F5F5;
+            --border-subtle: rgba(245, 245, 245, 0.2);
+            --inverse-bg: #F5F5F5;
+            --inverse-fg: #0A0A0A;
+        }
+    }
 
-        --wrapper-width: 800px;
-        --wrapper-padding: clamp(1.25rem, 5vw, 3rem);
+    :root {
+        --font-mono: var(--font-jetbrains-mono), ui-monospace, "JetBrains Mono", monospace;
+
+        --wrapper-padding: 32px;
     }
 
 }

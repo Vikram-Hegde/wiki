@@ -1,6 +1,140 @@
 ---
 import { Font } from "astro:assets";
+import { execSync } from "node:child_process";
 import "../global.css";
+
+const GITHUB_USER = "Vikram-Hegde";
+const NOW_REPO_COUNT = 4;
+const ACTIVE_THRESHOLD_DAYS = 90;
+
+type Repo = {
+    name: string;
+    html_url: string;
+    description: string | null;
+    language: string | null;
+    archived: boolean;
+    fork: boolean;
+    stargazers_count: number;
+    pushed_at: string;
+    created_at: string;
+};
+
+type LanguageStat = {
+    name: string;
+    count: number;
+    activeCount: number;
+    stars: number;
+    earliest: string;
+    latest: string;
+    mostRecent: string;
+};
+
+type NowLog = { repos: Repo[]; error: string | null };
+type Stack = { languages: LanguageStat[]; totalRepos: number; error: string | null };
+
+let now: NowLog = { repos: [], error: null };
+let stack: Stack = { languages: [], totalRepos: 0, error: null };
+
+try {
+    const res = await fetch(
+        `https://api.github.com/users/${GITHUB_USER}/repos?sort=pushed&per_page=100&type=owner`,
+        {
+            headers: { Accept: "application/vnd.github+json" },
+            signal: AbortSignal.timeout(5000),
+        },
+    );
+    if (!res.ok) throw new Error(`GitHub API returned ${res.status}`);
+    const data: Repo[] = await res.json();
+    const own = data
+        .filter((r) => r.name.toLowerCase() !== GITHUB_USER.toLowerCase())
+        .filter((r) => !r.fork);
+
+    now.repos = own.slice(0, NOW_REPO_COUNT);
+
+    // Aggregate by language for STACK.MD
+    const langMap = new Map<string, LanguageStat>();
+    for (const r of own) {
+        if (!r.language) continue;
+        const lang = r.language;
+        const existing = langMap.get(lang) ?? {
+            name: lang,
+            count: 0,
+            activeCount: 0,
+            stars: 0,
+            earliest: r.created_at,
+            latest: r.pushed_at,
+            mostRecent: r.pushed_at,
+        };
+        const days = (Date.now() - new Date(r.pushed_at).getTime()) / (1000 * 60 * 60 * 24);
+        existing.count += 1;
+        existing.stars += r.stargazers_count;
+        if (days <= ACTIVE_THRESHOLD_DAYS) existing.activeCount += 1;
+        if (new Date(r.created_at) < new Date(existing.earliest)) existing.earliest = r.created_at;
+        if (new Date(r.pushed_at) > new Date(existing.latest)) existing.latest = r.pushed_at;
+        if (new Date(r.pushed_at) > new Date(existing.mostRecent)) existing.mostRecent = r.pushed_at;
+        langMap.set(lang, existing);
+    }
+    stack.languages = Array.from(langMap.values())
+        .sort((a, b) => new Date(b.mostRecent).getTime() - new Date(a.mostRecent).getTime());
+    stack.totalRepos = own.length;
+} catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    now.error = msg;
+    stack.error = msg;
+}
+
+const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+// Build-time metrics (real, derived from the actual build environment)
+const BUILD_NOW = new Date();
+const BUILD_DATE_ISO = BUILD_NOW.toISOString().slice(0, 10); // YYYY-MM-DD
+const BUILD_DATE_HUMAN = `${BUILD_NOW.getUTCFullYear()}-${String(BUILD_NOW.getUTCMonth() + 1).padStart(2, "0")}-${String(BUILD_NOW.getUTCDate()).padStart(2, "0")}`;
+const BUILD_YEAR = BUILD_NOW.getUTCFullYear();
+const BUILD_TIME_HUMAN = `${String(BUILD_NOW.getUTCHours()).padStart(2, "0")}:${String(BUILD_NOW.getUTCMinutes()).padStart(2, "0")} UTC`;
+
+let gitHash: string;
+let gitDirty: boolean;
+try {
+    gitHash = execSync("git rev-parse --short HEAD", { encoding: "utf-8" }).trim();
+    gitDirty = execSync("git diff --quiet HEAD; echo $?", { encoding: "utf-8" }).trim() !== "0";
+} catch {
+    gitHash = "no-git";
+    gitDirty = false;
+}
+
+// Flip to true when the blog is real. Until then, the § WRITING.LOG section
+// is hidden but the code is preserved in source.
+const SHOW_WRITING = false;
+
+const SECTION_COUNT = SHOW_WRITING ? 9 : 8; // hero-label, hero, focus, bio, now, stack, [writing,] contact, eof
+
+function monthYear(iso: string): string {
+    const d = new Date(iso);
+    return `→ ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}
+
+function yearOnly(iso: string): string {
+    return String(new Date(iso).getUTCFullYear());
+}
+
+function relativeMonth(iso: string): string {
+    const d = new Date(iso);
+    const months = (Date.now() - d.getTime()) / (1000 * 60 * 60 * 24 * 30);
+    return months < 1 ? "THIS MONTH" : `${Math.floor(months)} MO AGO`;
+}
+
+function deriveStatus(repo: Repo): string {
+    if (repo.archived) return "ARCHIVED";
+    const days = (Date.now() - new Date(repo.pushed_at).getTime()) / (1000 * 60 * 60 * 24);
+    if (days < 30) return "SHIPPING";
+    if (days < 180) return "MAINTAIN";
+    if (days < 365) return "STALE";
+    return "ARCHIVED";
+}
+
+function pluralize(n: number, singular: string, plural: string): string {
+    return `${n} ${n === 1 ? singular : plural}`;
+}
 ---
 
 <html lang="en">
@@ -8,7 +142,6 @@ import "../global.css";
         <meta charset="utf-8" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <meta name="viewport" content="width=device-width" />
-        <meta name="generator" content={Astro.generator} />
         <meta
             name="description"
             content="Personal site of Vikram, a frontend engineer building clean and intrinsic experiences for the modern web"
@@ -16,95 +149,299 @@ import "../global.css";
         <meta name="author" content="Vikram" />
         <link rel="canonical" href="https://vikram.wiki/" />
         <meta http-equiv="content-language" content="en" />
-        <Font cssVariable="--font-figtree" preload />
-        <Font cssVariable="--font-playfair-display" preload />
         <Font cssVariable="--font-jetbrains-mono" preload />
         <title>Vikram | Design Technologist</title>
     </head>
     <body>
         <div class="page">
-            <div class="glow" aria-hidden="true"></div>
-            <div class="grid-pattern" aria-hidden="true"></div>
+            <header class="meta-strip">
+                <div class="meta-strip__left">
+                    <span>vikram.wiki/</span>
+                    <span class="meta-strip__dim">index.html</span>
+                </div>
+                <div class="meta-strip__right">
+                    <span class="meta-strip__dim">[{BUILD_DATE_ISO}]</span>
+                    <span class="meta-strip__dim">[{BUILD_TIME_HUMAN}]</span>
+                    <span class="meta-strip__badge">NO COOKIES</span>
+                </div>
+            </header>
 
-            <div class="wrapper">
-                <header>
-                    <a href="/" class="logo">Vikram</a>
-                    <nav>
-                        <a href="#work">Work</a>
-                        <a href="#writing">Writing</a>
-                        <a href="#about">About</a>
-                    </nav>
-                </header>
+            <nav class="nav">
+                <a href="/" class="nav__logo">VIKRAM/</a>
+                <ul class="nav__links">
+                    <li><a href="#work" class="nav__link">[01] Work</a></li>
+                    <li><a href="#writing" class="nav__link">[02] Writing</a></li>
+                    <li><a href="#about" class="nav__link">[03] About</a></li>
+                    <li><a href="#contact" class="nav__link nav__link--active">[04] Contact →</a></li>
+                </ul>
+            </nav>
 
-                <main>
-                    <section class="hero">
-                        <div class="badges">
-                            <span class="badge">Design Technologist</span>
-                        </div>
-                        <h1>Hey, I'm Vikram</h1>
-                        <p class="hero-sub">
-                            Frontend engineer building clean, fast web experiences — obsessing over the small details that make products feel right.
-                        </p>
-                    </section>
+            <main>
+                <section class="hero-label">
+                    <div>// HERO / 001</div>
+                    <div class="hero-label__dim">EST. 2018 / BANGALORE, IN / UTC+5:30</div>
+                </section>
 
-                    <section class="section" id="about">
-                        <div class="section-label">
-                            <span class="dot"></span>
-                            <span class="label-text">About</span>
-                        </div>
+                <section class="hero" aria-label="Introduction">
+                    <h1 class="hero__title">
+                        Frontend<br/>engineer.<br/>Small details.<br/>Big opinions.
+                    </h1>
+                </section>
+
+                <section class="focus" aria-label="Current focus">
+                    <div class="focus__left">
+                        <span>// FOCUS</span>
+                        <span class="focus__dim">intrinsic web design, container queries, type systems</span>
+                    </div>
+                    <div class="focus__right">
+                        <span class="focus__dim">UPDATED {BUILD_DATE_HUMAN}</span>
+                        <span class="focus__chip">{gitHash}{gitDirty ? "*" : ""}</span>
+                    </div>
+                </section>
+
+                <section class="bio" id="about" aria-labelledby="bio-label">
+                    <div class="bio__label">
+                        <div id="bio-label">BIO</div>
+                        <div class="bio__sub">→ 002</div>
+                    </div>
+                    <div class="bio__body">
                         <p>
-                            Most of my work lives in the frontend world — React, CSS, design systems, and tooling. I'm especially interested in intrinsic web design and letting the web do what it's good at.
+                            Vikram Hegde. Frontend engineer based in Bangalore. Writes
+                            React, fights with CSS, ships small libraries, and redesigns
+                            this site on a quarterly basis.
                         </p>
-                        <p class="secondary">
-                            If something feels clunky for users or developers, I want to fix it. This site is where I share things I'm learning, stuff I'm building, and thoughts on web dev and DX.
+                        <p class="bio__muted">
+                            Currently obsessed with intrinsic web design, container
+                            queries, and the small interactions that make a product feel
+                            considered. TypeScript by day, plain HTML by preference.
                         </p>
-                    </section>
+                    </div>
+                </section>
 
-                    <section class="section">
-                        <div class="section-label">
-                            <span class="dot"></span>
-                            <span class="label-text">Stack</span>
+                <section class="now" id="work" aria-labelledby="now-label">
+                    <header class="section-header">
+                        <h2 id="now-label">§ NOW.LOG</h2>
+                        <div class="section-header__meta">
+                            {now.error
+                                ? `OFFLINE / GITHUB API UNAVAILABLE`
+                                : (() => {
+                                    const activeCount = now.repos.filter((r) => deriveStatus(r) === "SHIPPING").length;
+                                    const lastPush = now.repos[0]?.pushed_at;
+                                    const lastPushHuman = lastPush
+                                        ? relativeMonth(lastPush).toLowerCase()
+                                        : "never";
+                                    return `${activeCount} SHIPPING / LAST PUSH ${lastPushHuman} / PULLED FROM github.com/${GITHUB_USER}`;
+                                })()}
                         </div>
-                        <div class="chips">
-                            <span class="chip">React</span>
-                            <span class="chip">CSS</span>
-                            <span class="chip">Design Systems</span>
-                            <span class="chip">TypeScript</span>
-                            <span class="chip">Astro</span>
-                            <span class="chip">Tooling & DX</span>
-                        </div>
-                    </section>
+                    </header>
 
-                    <section class="section section--no-border">
-                        <div class="section-label">
-                            <span class="dot"></span>
-                            <span class="label-text">Connect</span>
-                        </div>
-                        <div class="connect-cards">
-                            <a href="https://x.com/_vikramhegde_" class="connect-card" target="_blank" rel="noopener noreferrer">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16h-4.267z"/><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/></svg>
-                                <span class="connect-name">X / Twitter</span>
-                                <span class="connect-handle">@_vikramhegde_</span>
-                            </a>
-                            <a href="https://github.com/vikram-hegde" class="connect-card" target="_blank" rel="noopener noreferrer">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-                                <span class="connect-name">GitHub</span>
-                                <span class="connect-handle">vikram-hegde</span>
-                            </a>
-                            <a href="https://www.linkedin.com/in/vikramcodes" class="connect-card" target="_blank" rel="noopener noreferrer">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
-                                <span class="connect-name">LinkedIn</span>
-                                <span class="connect-handle">vikramcodes</span>
-                            </a>
-                        </div>
-                    </section>
-                </main>
+                    <div class="now__table">
+                        {now.error ? (
+                            <div class="now__row">
+                                <div class="now__cell now__cell--status">
+                                    <div class="now__cell-label">STATUS</div>
+                                    <div class="now__cell-value">OFFLINE</div>
+                                </div>
+                                <div class="now__cell now__cell--project">
+                                    <div class="now__cell-label">SOURCE</div>
+                                    <div class="now__project-name">github.com/{GITHUB_USER}</div>
+                                    <div class="now__project-meta">fetch failed at build time</div>
+                                </div>
+                                <div class="now__cell now__cell--what">
+                                    <div class="now__cell-label">WHAT</div>
+                                    <div class="now__cell-body">{now.error}. The build fell back to offline data; the page still works.</div>
+                                </div>
+                                <div class="now__cell now__cell--since">
+                                    <div class="now__cell-label now__cell-label--right">NEXT</div>
+                                    <div class="now__cell-value now__cell-value--right">↻ RETRY BUILD</div>
+                                </div>
+                            </div>
+                        ) : (
+                            now.repos.map((repo, i) => (
+                                <div class:list={["now__row", { "now__row--active": i === 0 }]}>
+                                    <div class="now__cell now__cell--status">
+                                        <div class:list={["now__cell-label", { "now__cell-label--dim": i !== 0 }]}>STATUS</div>
+                                        <div class="now__cell-value">{deriveStatus(repo)}</div>
+                                    </div>
+                                    <div class="now__cell now__cell--project">
+                                        <div class="now__cell-label">REPO</div>
+                                        <div>
+                                            <a
+                                                href={repo.html_url}
+                                                class="now__project-name now__project-name--link"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {repo.name}
+                                            </a>
+                                            <div class="now__project-meta">
+                                                {repo.language ? `${repo.language} / ` : ""}★ {repo.stargazers_count}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="now__cell now__cell--what">
+                                        <div class="now__cell-label">WHAT</div>
+                                        <div class="now__cell-body">{repo.description || "(no description)"}</div>
+                                    </div>
+                                    <div class="now__cell now__cell--since">
+                                        <div class="now__cell-label now__cell-label--right">PUSHED</div>
+                                        <div class="now__cell-value now__cell-value--right">
+                                            {monthYear(repo.pushed_at)} / {relativeMonth(repo.pushed_at)}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
 
-                <footer>
-                    <span>&copy; 2026 Vikram</span>
-                    <span>Built with Astro</span>
-                </footer>
-            </div>
+                    {!now.error && (
+                        <div class="now__footer">
+                            <a
+                                href={`https://github.com/${GITHUB_USER}?tab=repositories&sort=updated`}
+                                class="now__footer-link"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                ↗ ALL REPOS ON github.com/{GITHUB_USER}
+                            </a>
+                        </div>
+                    )}
+                </section>
+
+                <section class="stack" aria-labelledby="stack-label">
+                    <header class="section-header">
+                        <h2 id="stack-label">§ STACK.MD</h2>
+                        <div class="section-header__meta">
+                            {stack.error
+                                ? `OFFLINE / FALLBACK`
+                                : `${stack.languages.length} LANGUAGES / ${stack.totalRepos} PUBLIC REPOS / PULLED FROM GITHUB`}
+                        </div>
+                    </header>
+
+                    <div class="stack__table">
+                        {stack.error ? (
+                            <div class="stack__row">
+                                <div class="stack__num">--</div>
+                                <div class="stack__name">UNKNOWN</div>
+                                <div class="stack__desc">Could not derive a stack — {stack.error}</div>
+                                <div class="stack__year">↻ RETRY BUILD</div>
+                            </div>
+                        ) : (
+                            stack.languages.map((lang, i) => (
+                                <div class="stack__row">
+                                    <div class="stack__num">{String(i + 1).padStart(2, "0")}</div>
+                                    <div class="stack__name">{lang.name}</div>
+                                    <div class="stack__desc">
+                                        {pluralize(lang.count, "repo", "repos")}
+                                        {" / "}
+                                        <span class:list={["stack__desc-active", { "stack__desc-active--live": lang.activeCount > 0 }]}>
+                                            {pluralize(lang.activeCount, "active", "active")}
+                                        </span>
+                                        {lang.stars > 0 && (
+                                            <>
+                                                {" / "}★ {lang.stars}
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </section>
+
+                {SHOW_WRITING && (
+                <section class="writing" id="writing" aria-labelledby="writing-label">
+                    <header class="section-header">
+                        <h2 id="writing-label">§ WRITING.LOG</h2>
+                        <div class="section-header__meta">3 ENTRIES / 2 PUBLISHED / 1 DRAFT</div>
+                    </header>
+
+                    <div class="writing__list">
+                        <a href="#" class="writing__row">
+                            <div class="writing__date">2026-02-14</div>
+                            <div class="writing__badge writing__badge--published">PUBLISHED</div>
+                            <div class="writing__title">On Container Queries, Finally</div>
+                            <div class="writing__meta">essay / 9 min read</div>
+                            <div class="writing__arrow">↗</div>
+                        </a>
+                        <a href="#" class="writing__row">
+                            <div class="writing__date">2025-11-03</div>
+                            <div class="writing__badge writing__badge--published">PUBLISHED</div>
+                            <div class="writing__title">A Defense of Plain HTML</div>
+                            <div class="writing__meta">essay / 6 min read</div>
+                            <div class="writing__arrow">↗</div>
+                        </a>
+                        <a href="#" class="writing__row">
+                            <div class="writing__date">2025-08-21</div>
+                            <div class="writing__badge writing__badge--draft">DRAFT</div>
+                            <div class="writing__title">Notes on a Smaller Web</div>
+                            <div class="writing__meta">notes / 1,200 words</div>
+                            <div class="writing__arrow">↗</div>
+                        </a>
+                    </div>
+                </section>
+                )}
+
+                <section class="contact" id="contact" aria-labelledby="contact-label">
+                    <header class="section-header">
+                        <h2 id="contact-label">§ CONTACT.LINKS</h2>
+                        <div class="section-header__meta">3 CHANNELS / ALWAYS REPLY</div>
+                    </header>
+
+                    <div class="contact__grid">
+                        <a href="https://x.com/_vikramhegde_" class="contact__card" target="_blank" rel="noopener noreferrer">
+                            <div class="contact__card-header">
+                                <span>[01]</span>
+                                <span>↗</span>
+                            </div>
+                            <div>
+                                <div class="contact__card-name">X / TWITTER</div>
+                                <div class="contact__card-handle">@_vikramhegde_</div>
+                            </div>
+                        </a>
+                        <a href={`https://github.com/${GITHUB_USER}`} class="contact__card" target="_blank" rel="noopener noreferrer">
+                            <div class="contact__card-header">
+                                <span>[02]</span>
+                                <span>↗</span>
+                            </div>
+                            <div>
+                                <div class="contact__card-name">GITHUB</div>
+                                <div class="contact__card-handle">vikram-hegde</div>
+                            </div>
+                        </a>
+                        <a href="https://www.linkedin.com/in/vikramcodes" class="contact__card" target="_blank" rel="noopener noreferrer">
+                            <div class="contact__card-header">
+                                <span>[03]</span>
+                                <span>↗</span>
+                            </div>
+                            <div>
+                                <div class="contact__card-name">LINKEDIN</div>
+                                <div class="contact__card-handle">vikramcodes</div>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+
+                <section class="eof" aria-hidden="true">
+                    <pre class="eof__pre">{`// ════════════════════════════════════════════════════════════════════
+//  EOF — index.html rendered. ${SECTION_COUNT} sections. 0 dependencies.
+//  Built: ${BUILD_DATE_HUMAN} ${BUILD_TIME_HUMAN}  ·  Commit: ${gitHash}${gitDirty ? " (dirty)" : ""}
+//  "Make it work, make it right, make it small."  — k.n.
+// ════════════════════════════════════════════════════════════════════`}</pre>
+                </section>
+            </main>
+
+            <footer class="footer">
+                <div class="footer__left">
+                    <span>© {BUILD_YEAR} VIKRAM HEGDE</span>
+                    <span class="footer__dim">BUILT WITH ASTRO</span>
+                    <span class="footer__dim">NO JS FRAMEWORKS WERE HARMED</span>
+                </div>
+                <div class="footer__right">
+                    <span class="footer__dim">EOF</span>
+                    <span class="footer__chip">{gitHash}{gitDirty ? "*" : ""}</span>
+                </div>
+            </footer>
         </div>
 
         <script is:inline type="application/ld+json">
@@ -115,7 +452,7 @@ import "../global.css";
                 "url": "https://vikram.wiki",
                 "jobTitle": "Design Technologist",
                 "sameAs": [
-                    "https://github.com/vikram-hegde",
+                    `https://github.com/${GITHUB_USER}`,
                     "https://www.linkedin.com/in/vikramcodes"
                 ]
             }
@@ -124,265 +461,801 @@ import "../global.css";
 </html>
 
 <style>
-    /* Page shell */
     .page {
-        position: relative;
-        overflow: hidden;
-        min-height: 100vh;
-        min-height: 100dvh;
-    }
-
-    /* Vercel glow */
-    .glow {
-        position: absolute;
-        top: -120px;
-        left: 50%;
-        translate: -50% 0;
-        width: min(900px, 100vw);
-        height: 450px;
-        border-radius: 50%;
-        background: radial-gradient(
-            ellipse at center,
-            oklch(0.7 0.15 160 / 0.07) 0%,
-            oklch(0.6 0.15 240 / 0.04) 40%,
-            transparent 70%
-        );
-        filter: blur(60px);
-        pointer-events: none;
-    }
-
-    /* Subtle grid */
-    .grid-pattern {
-        position: absolute;
-        inset: 0;
-        height: 400px;
-        background-image:
-            linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-        background-size: 64px 64px;
-        mask-image: linear-gradient(to bottom, black, transparent);
-        pointer-events: none;
-    }
-
-    /* Wrapper */
-    .wrapper {
-        position: relative;
-        width: min(var(--wrapper-width), calc(100% - var(--wrapper-padding) * 2));
+        max-width: 1440px;
         margin-inline: auto;
-        padding-block: 3rem;
+        background-color: var(--bg);
+        color: var(--fg);
     }
 
-    /* Header */
-    header {
+    /* ───────────────────────────────────────────────────────────────
+       META STRIP
+       ─────────────────────────────────────────────────────────────── */
+    .meta-strip {
+        background-color: var(--inverse-bg);
+        color: var(--inverse-fg);
+        padding: 14px var(--wrapper-padding);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding-block-end: 1rem;
-        border-block-end: 1px solid var(--color-border);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-weight: 600;
     }
 
-    .logo {
-        font-family: var(--font-serif);
-        font-size: 0.9375rem;
+    .meta-strip__left,
+    .meta-strip__right {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+    }
+
+    .meta-strip__dim {
+        opacity: 0.6;
+    }
+
+    .meta-strip__badge {
+        background-color: var(--inverse-fg);
+        color: var(--inverse-bg);
+        padding: 2px 8px;
+        font-weight: 700;
+    }
+
+    /* ───────────────────────────────────────────────────────────────
+       NAV
+       ─────────────────────────────────────────────────────────────── */
+    .nav {
+        padding: 24px var(--wrapper-padding);
+        border-bottom: 2px solid var(--border);
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+    }
+
+    .nav__logo {
+        font-size: clamp(28px, 4vw, 48px);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 0.95;
+    }
+
+    .nav__links {
+        display: flex;
+    }
+
+    .nav__link {
+        padding: 10px 16px;
+        border: 1px solid var(--border);
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        transition: background-color 0.1s, color 0.1s;
+    }
+
+    .nav__link + .nav__link,
+    .nav__links li + li .nav__link {
+        border-left: none;
+    }
+
+    .nav__link:hover {
+        background-color: var(--fg);
+        color: var(--bg);
+    }
+
+    .nav__link--active,
+    .nav__link--active:hover {
+        background-color: var(--inverse-bg);
+        color: var(--inverse-fg);
+    }
+
+    /* ───────────────────────────────────────────────────────────────
+       HERO LABEL + HEADLINE
+       ─────────────────────────────────────────────────────────────── */
+    .hero-label {
+        padding: 48px var(--wrapper-padding) 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        border-bottom: 1px solid var(--border);
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    .hero-label__dim {
+        color: var(--fg-muted);
         font-weight: 500;
-        color: var(--color-text-primary);
     }
 
-    nav {
-        display: flex;
-        gap: 1.5rem;
-    }
-
-    nav a {
-        font-size: 0.875rem;
-        color: var(--color-text-secondary);
-        transition: color 0.2s;
-
-        &:hover {
-            color: var(--color-text-primary);
-        }
-    }
-
-    /* Hero */
     .hero {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-        padding-block: 5rem 4rem;
-        border-block-end: 1px solid var(--color-border);
+        padding: 0 var(--wrapper-padding) 40px;
     }
 
-    .badges {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.625rem;
+    .hero__title {
+        font-size: clamp(48px, 9vw, 104px);
+        line-height: 0.95;
+        letter-spacing: -0.05em;
+        font-weight: 800;
+        text-transform: uppercase;
+        margin: 0;
     }
 
-    .badge {
-        font-family: var(--font-mono);
-        font-size: 0.75rem;
-        color: var(--color-text-secondary);
-        letter-spacing: 0.03em;
-        padding: 0.3125rem 0.875rem;
-        border-radius: 999px;
-        border: 1px solid var(--color-border-hover);
-        background-color: var(--color-surface);
-    }
-
-    h1 {
-        font-size: clamp(2.25rem, 5vw, 3.625rem);
-        line-height: 1.1;
-        letter-spacing: -0.02em;
-        color: var(--color-text-primary);
-    }
-
-    .hero-sub {
-        font-size: clamp(0.9375rem, 2vw, 1.125rem);
-        line-height: 1.7;
-        color: var(--color-text-secondary);
-        max-width: 620px;
-    }
-
-    /* Sections */
-    .section {
-        display: flex;
-        flex-direction: column;
-        gap: 1.25rem;
-        padding-block: 3.5rem;
-        border-block-end: 1px solid var(--color-border);
-    }
-
-    .section--no-border {
-        border-block-end: none;
-    }
-
-    .section-label {
+    /* ───────────────────────────────────────────────────────────────
+       FOCUS BAR
+       ─────────────────────────────────────────────────────────────── */
+    .focus {
+        border-top: 2px solid var(--border);
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-    }
-
-    .dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background-color: var(--color-text-secondary);
-    }
-
-    .label-text {
-        font-family: var(--font-mono);
-        font-size: 0.6875rem;
-        color: var(--color-text-secondary);
-        letter-spacing: 0.1em;
+        justify-content: space-between;
+        padding: 14px var(--wrapper-padding);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
         text-transform: uppercase;
     }
 
-    .section p {
-        font-size: 1rem;
-        line-height: 1.7;
-        color: var(--color-text-primary);
-        text-wrap: pretty;
-    }
-
-    .section p.secondary {
-        color: var(--color-text-secondary);
-    }
-
-    /* Stack chips */
-    .chips {
+    .focus__left,
+    .focus__right {
         display: flex;
-        flex-wrap: wrap;
-        gap: 0.625rem;
+        gap: 24px;
+        align-items: center;
     }
 
-    .chip {
-        font-size: 0.8125rem;
-        padding: 0.5rem 1rem;
-        border-radius: 0.5rem;
-        border: 1px solid var(--color-border-hover);
-        background-color: var(--color-surface);
-        transition: background-color 0.2s, border-color 0.2s;
-
-        &:hover {
-            background-color: var(--color-surface-hover);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
+    .focus__dim {
+        opacity: 0.6;
     }
 
-    /* Connect cards */
-    .connect-cards {
+    .focus__chip {
+        background-color: var(--inverse-bg);
+        color: var(--inverse-fg);
+        padding: 2px 8px;
+    }
+
+    /* ───────────────────────────────────────────────────────────────
+       BIO
+       ─────────────────────────────────────────────────────────────── */
+    .bio {
+        border-bottom: 2px solid var(--border);
         display: flex;
-        gap: 0.75rem;
+        align-items: stretch;
     }
 
-    .connect-card {
+    .bio__label {
+        width: 200px;
+        flex-shrink: 0;
+        padding: 24px;
+        border-right: 2px solid var(--border);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
         display: flex;
         flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
-        padding: 1rem 1.25rem;
-        border-radius: 0.625rem;
-        border: 1px solid var(--color-border-hover);
-        background-color: var(--color-surface);
+        justify-content: space-between;
+    }
+
+    .bio__sub {
+        opacity: 0.5;
+        font-size: 11px;
+        font-weight: 400;
+    }
+
+    .bio__body {
         flex: 1;
-        transition: background-color 0.2s, border-color 0.2s;
-
-        &:hover {
-            background-color: var(--color-surface-hover);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
+        padding: 24px var(--wrapper-padding);
+        display: flex;
+        gap: 40px;
+        font-size: 15px;
+        line-height: 1.55;
     }
 
-    .connect-name {
-        font-size: 0.875rem;
+    .bio__body p {
+        flex: 1;
+    }
+
+    .bio__muted {
+        opacity: 0.65;
+        font-weight: 400;
+    }
+
+    /* ───────────────────────────────────────────────────────────────
+       SECTION HEADERS
+       ─────────────────────────────────────────────────────────────── */
+    .section-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        padding: 48px var(--wrapper-padding) 16px;
+    }
+
+    .section-header h2 {
+        font-size: clamp(22px, 2.5vw, 32px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        text-transform: uppercase;
+    }
+
+    .section-header__meta {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+    }
+
+    /* ───────────────────────────────────────────────────────────────
+       § NOW.LOG
+       ─────────────────────────────────────────────────────────────── */
+    .now__table {
+        border-top: 2px solid var(--border);
+    }
+
+    .now__row {
+        display: flex;
+        align-items: stretch;
+        border-bottom: 1px solid var(--border);
+        min-height: 140px;
+    }
+
+    .now__row:last-child {
+        border-bottom: none;
+    }
+
+    .now__cell {
+        padding: 20px 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .now__cell--status {
+        width: 140px;
+        flex-shrink: 0;
+        border-right: 1px solid var(--border);
+    }
+
+    .now__row--active .now__cell--status {
+        background-color: var(--inverse-bg);
+        color: var(--inverse-fg);
+    }
+
+    .now__cell--project {
+        width: 300px;
+        flex-shrink: 0;
+        border-right: 1px solid var(--border);
+    }
+
+    .now__cell--what {
+        flex: 1;
+        border-right: 1px solid var(--border);
+    }
+
+    .now__cell--since {
+        width: 140px;
+        flex-shrink: 0;
+        align-items: flex-end;
+    }
+
+    .now__cell-label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        opacity: 0.6;
+    }
+
+    .now__cell-label--right {
+        text-align: right;
+    }
+
+    .now__cell-label--dim {
+        opacity: 0.5;
+    }
+
+    .now__cell-value {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    .now__cell-value--right {
+        text-align: right;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .now__project-name {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--fg);
+        letter-spacing: -0.01em;
+        line-height: 1.1;
+    }
+
+    a.now__project-name--link {
+        color: var(--fg);
+        text-decoration: none;
+        border-bottom: 2px solid transparent;
+        transition: border-color 0.1s;
+    }
+
+    a.now__project-name--link:hover {
+        border-bottom-color: var(--fg);
+    }
+
+    .now__footer {
+        display: flex;
+        justify-content: flex-end;
+        padding: 16px 0 0;
+    }
+
+    .now__footer-link {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--fg);
+        padding: 10px 16px;
+        border: 1px solid var(--fg);
+        transition: background-color 0.1s, color 0.1s;
+    }
+
+    .now__footer-link:hover {
+        background-color: var(--fg);
+        color: var(--bg);
+    }
+
+    .now__project-meta {
+        font-size: 11px;
         font-weight: 500;
-        color: var(--color-text-primary);
+        opacity: 0.6;
+        margin-top: 6px;
     }
 
-    .connect-handle {
-        font-family: var(--font-mono);
-        font-size: 0.75rem;
-        color: var(--color-text-muted);
+    .now__cell-body {
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.4;
     }
 
-    /* Footer */
-    footer {
+    /* ───────────────────────────────────────────────────────────────
+       § STACK.MD
+       ─────────────────────────────────────────────────────────────── */
+    .stack__table {
+        border-top: 2px solid var(--border);
+    }
+
+    .stack__row {
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid var(--border);
+        min-height: 64px;
+    }
+
+    .stack__row:last-child {
+        border-bottom: none;
+    }
+
+    .stack__num {
+        width: 60px;
+        flex-shrink: 0;
+        padding: 0 16px;
+        font-size: 14px;
+        font-weight: 700;
+        border-right: 1px solid var(--border);
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    .stack__name {
+        width: 280px;
+        flex-shrink: 0;
+        padding: 0 24px;
+        font-size: 24px;
+        font-weight: 800;
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    .stack__desc {
+        flex: 1;
+        padding: 0 24px;
+        font-size: 13px;
+        font-weight: 500;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 0;
+    }
+
+    .stack__desc-active {
+        font-weight: 700;
+    }
+
+    .stack__desc-active--live {
+        background-color: var(--inverse-bg);
+        color: var(--inverse-fg);
+        padding: 2px 6px;
+    }
+
+    .stack__year {
+        width: 140px;
+        flex-shrink: 0;
+        padding: 0 16px;
+        font-size: 12px;
+        font-weight: 600;
+        text-align: right;
+        border-left: 1px solid var(--border);
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    /* ───────────────────────────────────────────────────────────────
+       § WRITING.LOG
+       ─────────────────────────────────────────────────────────────── */
+    .writing__list {
+        border-top: 2px solid var(--border);
+    }
+
+    .writing__row {
+        display: flex;
+        align-items: center;
+        padding: 24px 0;
+        border-bottom: 1px solid var(--border);
+        transition: background-color 0.1s;
+    }
+
+    .writing__row:last-child {
+        border-bottom: none;
+    }
+
+    .writing__row:hover {
+        background-color: var(--border-subtle);
+    }
+
+    .writing__date {
+        width: 120px;
+        flex-shrink: 0;
+        padding: 0 16px;
+        font-size: 13px;
+        font-weight: 600;
+        opacity: 0.6;
+    }
+
+    .writing__badge {
+        width: 110px;
+        flex-shrink: 0;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        margin: 0 16px;
+        border: 1px solid var(--border);
+    }
+
+    .writing__badge--published {
+        background-color: var(--inverse-bg);
+        color: var(--inverse-fg);
+        border-color: var(--inverse-bg);
+    }
+
+    .writing__badge--draft {
+        background-color: transparent;
+        color: var(--fg);
+    }
+
+    .writing__title {
+        flex: 1;
+        padding: 0 24px;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+
+    .writing__meta {
+        width: 200px;
+        flex-shrink: 0;
+        padding: 0 16px;
+        font-size: 12px;
+        font-weight: 500;
+        opacity: 0.6;
+    }
+
+    .writing__arrow {
+        width: 60px;
+        flex-shrink: 0;
+        padding: 0 16px;
+        font-size: 20px;
+        font-weight: 600;
+        text-align: right;
+    }
+
+    /* ───────────────────────────────────────────────────────────────
+       § CONTACT.LINKS
+       ─────────────────────────────────────────────────────────────── */
+    .contact__grid {
+        border-top: 2px solid var(--border);
+        display: flex;
+    }
+
+    .contact__card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 32px 24px;
+        border-right: 2px solid var(--border);
+        min-height: 200px;
+        transition: background-color 0.1s, color 0.1s;
+    }
+
+    .contact__card:last-child {
+        border-right: none;
+    }
+
+    .contact__card:hover {
+        background-color: var(--inverse-bg);
+        color: var(--inverse-fg);
+    }
+
+    .contact__card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .contact__card-name {
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    .contact__card-handle {
+        font-size: 13px;
+        font-weight: 500;
+        margin-top: 8px;
+    }
+
+    /* ───────────────────────────────────────────────────────────────
+       EOF
+       ─────────────────────────────────────────────────────────────── */
+    .eof {
+        padding: 24px var(--wrapper-padding) 0;
+    }
+
+    .eof__pre {
+        font-family: inherit;
+        font-size: 11px;
+        line-height: 1.6;
+        color: var(--fg);
+        opacity: 0.5;
+        white-space: pre;
+        margin: 0;
+    }
+
+    /* ───────────────────────────────────────────────────────────────
+       FOOTER
+       ─────────────────────────────────────────────────────────────── */
+    .footer {
+        background-color: var(--inverse-bg);
+        color: var(--inverse-fg);
+        padding: 20px var(--wrapper-padding);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding-block-start: 1.5rem;
-        border-block-start: 1px solid var(--color-border);
-        font-family: var(--font-mono);
-        font-size: 0.75rem;
-        color: var(--color-text-muted);
-        letter-spacing: 0.03em;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
     }
 
-    /* Mobile */
-    @media (max-width: 640px) {
-        .hero {
-            padding-block: 3rem 2.5rem;
+    .footer__left,
+    .footer__right {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+    }
+
+    .footer__dim {
+        opacity: 0.6;
+    }
+
+    .footer__chip {
+        background-color: var(--inverse-fg);
+        color: var(--inverse-bg);
+        padding: 2px 8px;
+        font-weight: 700;
+    }
+
+    /* ───────────────────────────────────────────────────────────────
+       RESPONSIVE
+       ─────────────────────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+        .meta-strip {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
         }
 
-        .section {
-            padding-block: 2.25rem;
+        .nav {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
         }
 
-        .connect-cards {
+        .nav__links {
+            flex-wrap: wrap;
+        }
+
+        .hero-label {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .focus {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .bio {
             flex-direction: column;
         }
 
-        .connect-card {
+        .bio__label {
+            width: 100%;
+            border-right: none;
+            border-bottom: 2px solid var(--border);
             flex-direction: row;
+            gap: 16px;
             align-items: center;
         }
 
-        .connect-handle {
-            margin-inline-start: auto;
+        .bio__body {
+            flex-direction: column;
+            gap: 16px;
         }
 
-        nav {
-            gap: 1rem;
+        .now__row {
+            flex-wrap: wrap;
+            min-height: 0;
+        }
+
+        .now__cell--status {
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid var(--border);
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+        }
+
+        .now__cell--project {
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid var(--border);
+            padding: 16px;
+        }
+
+        .now__cell--what {
+            border-right: none;
+            border-bottom: 1px solid var(--border);
+            padding: 16px;
+        }
+
+        .now__cell--since {
+            width: 100%;
+            align-items: flex-start;
+            padding: 12px 16px;
+        }
+
+        .now__cell-value--right,
+        .now__cell-label--right {
+            text-align: left;
+        }
+
+        .stack__row {
+            flex-wrap: wrap;
+            min-height: 0;
+        }
+
+        .stack__num {
+            width: 60px;
+            border-right: none;
+            border-bottom: 1px solid var(--border);
+            height: 48px;
+        }
+
+        .stack__name {
+            width: auto;
+            flex: 1;
+            border-bottom: 1px solid var(--border);
+            height: 48px;
+            font-size: 20px;
+        }
+
+        .stack__desc {
+            width: 100%;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stack__year {
+            width: 100%;
+            text-align: left;
+            border-left: none;
+            border-bottom: 1px solid var(--border);
+            justify-content: flex-start;
+            padding: 12px 16px;
+        }
+
+        .stack__row:last-child .stack__year {
+            border-bottom: none;
+        }
+
+        .writing__row {
+            flex-wrap: wrap;
+            padding: 16px 0;
+        }
+
+        .writing__date {
+            width: auto;
+            padding: 0 16px;
+        }
+
+        .writing__badge {
+            margin: 0 16px 0 0;
+        }
+
+        .writing__title {
+            width: 100%;
+            padding: 12px 16px 0;
+            order: 5;
+        }
+
+        .writing__meta {
+            width: auto;
+            padding: 0 16px;
+        }
+
+        .writing__arrow {
+            width: auto;
+            padding: 0 16px;
+        }
+
+        .contact__grid {
+            flex-direction: column;
+        }
+
+        .contact__card {
+            border-right: none;
+            border-bottom: 2px solid var(--border);
+            min-height: 160px;
+        }
+
+        .contact__card:last-child {
+            border-bottom: none;
+        }
+
+        .footer {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
         }
     }
 </style>
