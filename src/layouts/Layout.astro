@@ -1,0 +1,38 @@
+---
+import { Font } from "astro:assets";
+
+const { title = "Vikram | Design Technologist", description = "Personal site of Vikram, a frontend engineer building clean and intrinsic experiences for the modern web" } = Astro.props as {
+    title?: string;
+    description?: string;
+};
+---
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content={description} />
+        <meta name="author" content="Vikram" />
+        <link rel="canonical" href="https://vikram.wiki/" />
+        <meta http-equiv="content-language" content="en" />
+        <Font cssVariable="--font-jetbrains-mono" preload />
+        <title>{title}</title>
+        <slot name="head" />
+    </head>
+    <body>
+        <slot name="bleed" />
+        <div class="page">
+            <slot />
+        </div>
+        <slot name="bleed-end" />
+    </body>
+</html>
+
+<style>
+    .page {
+        max-width: 1440px;
+        margin-inline: auto;
+        background-color: var(--bg);
+        color: var(--fg);
+    }
+</style>

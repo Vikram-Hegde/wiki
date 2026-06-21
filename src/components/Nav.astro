@@ -1,0 +1,88 @@
+---
+---
+<nav class="nav">
+    <div class="nav__inner">
+        <a href="/" class="nav__logo">VIKRAM/</a>
+        <ul class="nav__links">
+            <li><a href="#work" class="nav__link">[01] Work</a></li>
+            <li><a href="#writing" class="nav__link">[02] Writing</a></li>
+            <li><a href="#about" class="nav__link">[03] About</a></li>
+            <li><a href="#contact" class="nav__link nav__link--active">[04] Contact →</a></li>
+        </ul>
+    </div>
+</nav>
+
+<style>
+    .nav {
+        padding: 24px var(--wrapper-padding);
+        border-bottom: 2px solid var(--border);
+        background-color: var(--bg);
+        container-type: inline-size;
+    }
+
+    .nav__inner {
+        max-width: 1440px;
+        margin-inline: auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .nav__logo {
+        font-size: clamp(28px, 4vw, 48px);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 0.95;
+    }
+
+    .nav__links {
+        display: flex;
+    }
+
+    .nav__link {
+        padding: 10px 16px;
+        border: 1px solid var(--border);
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        transition: background-color 0.1s, color 0.1s;
+        margin-left: -1px;
+    }
+
+    .nav__links li:first-child .nav__link {
+        margin-left: 0;
+    }
+
+    .nav__link:hover {
+        background-color: var(--fg);
+        color: var(--bg);
+    }
+
+    .nav__link--active,
+    .nav__link--active:hover {
+        background-color: var(--inverse-bg);
+        color: var(--inverse-fg);
+    }
+
+    @container (max-width: 640px) {
+        .nav__inner {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .nav__links {
+            flex-wrap: wrap;
+            width: 100%;
+        }
+        .nav__link {
+            margin-top: -1px;
+            line-height: 2lh;
+        }
+        .nav__links li:first-child .nav__link {
+            margin-top: 0;
+        }
+    }
+</style>

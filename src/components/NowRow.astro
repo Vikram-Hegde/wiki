@@ -1,0 +1,40 @@
+---
+import type { Repo } from "../lib/github";
+import { deriveStatus } from "../lib/github";
+import { monthYear, relativeMonth } from "../lib/format";
+
+const { repo, active } = Astro.props as { repo: Repo; active: boolean };
+const status = deriveStatus(repo);
+---
+<div class:list={["now__row", { "now__row--active": active }]}>
+    <div class="now__cell now__cell--status">
+        <div class:list={["now__cell-label", { "now__cell-label--dim": !active }]}>STATUS</div>
+        <div class="now__cell-value">{status}</div>
+    </div>
+    <div class="now__cell now__cell--project">
+        <div class="now__cell-label">REPO</div>
+        <div>
+            <a
+                href={repo.html_url}
+                class="now__project-name now__project-name--link"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                {repo.name}
+            </a>
+            <div class="now__project-meta">
+                {repo.language ? `${repo.language} / ` : ""}★ {repo.stargazers_count}
+            </div>
+        </div>
+    </div>
+    <div class="now__cell now__cell--what">
+        <div class="now__cell-label">WHAT</div>
+        <div class="now__cell-body">{repo.description || "(no description)"}</div>
+    </div>
+    <div class="now__cell now__cell--since">
+        <div class="now__cell-label now__cell-label--right">PUSHED</div>
+        <div class="now__cell-value now__cell-value--right">
+            {monthYear(repo.pushed_at)} / {relativeMonth(repo.pushed_at)}
+        </div>
+    </div>
+</div>

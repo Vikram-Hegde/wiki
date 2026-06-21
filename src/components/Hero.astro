@@ -1,0 +1,29 @@
+---
+---
+<section class="hero" aria-label="Introduction">
+    <h1 class="hero__title">
+        Frontend<br/>engineer.<br/>Small details.<br/>Big opinions.
+    </h1>
+</section>
+
+<style>
+    .hero {
+        padding: var(--wrapper-padding);
+        container-type: inline-size;
+    }
+
+    .hero__title {
+        font-size: clamp(48px, 9vw, 104px);
+        line-height: 0.95;
+        letter-spacing: -0.05em;
+        font-weight: 800;
+        text-transform: uppercase;
+        margin: 0;
+    }
+
+    @container (max-width: 400px) {
+        .hero__title {
+            font-size: 40px;
+        }
+    }
+</style>

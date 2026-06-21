@@ -1,0 +1,235 @@
+---
+import type { NowLog } from "../lib/github";
+import { deriveStatus } from "../lib/github";
+import { relativeMonth } from "../lib/format";
+import SectionHeader from "./SectionHeader.astro";
+import NowRow from "./NowRow.astro";
+
+const GITHUB_USER = "Vikram-Hegde";
+const { now } = Astro.props as { now: NowLog };
+
+let meta: string;
+if (now.error) {
+    meta = "OFFLINE / GITHUB API UNAVAILABLE";
+} else {
+    const activeCount = now.repos.filter((r) => deriveStatus(r) === "SHIPPING").length;
+    const lastPush = now.repos[0]?.pushed_at;
+    const lastPushHuman = lastPush ? relativeMonth(lastPush).toLowerCase() : "never";
+    meta = `${activeCount} SHIPPING / LAST PUSH ${lastPushHuman} / PULLED FROM github.com/${GITHUB_USER}`;
+}
+---
+<section class="now" id="work" aria-labelledby="now-label">
+    <SectionHeader id="now-label" title="§ NOW.LOG" meta={meta} />
+
+    <div class="now__table">
+        {now.error ? (
+            <div class="now__row">
+                <div class="now__cell now__cell--status">
+                    <div class="now__cell-label">STATUS</div>
+                    <div class="now__cell-value">OFFLINE</div>
+                </div>
+                <div class="now__cell now__cell--project">
+                    <div class="now__cell-label">SOURCE</div>
+                    <div class="now__project-name">github.com/{GITHUB_USER}</div>
+                    <div class="now__project-meta">fetch failed at build time</div>
+                </div>
+                <div class="now__cell now__cell--what">
+                    <div class="now__cell-label">WHAT</div>
+                    <div class="now__cell-body">{now.error}. The build fell back to offline data; the page still works.</div>
+                </div>
+                <div class="now__cell now__cell--since">
+                    <div class="now__cell-label now__cell-label--right">NEXT</div>
+                    <div class="now__cell-value now__cell-value--right">↻ RETRY BUILD</div>
+                </div>
+            </div>
+        ) : (
+            now.repos.map((repo, i) => (
+                <NowRow repo={repo} active={i === 0} />
+            ))
+        )}
+    </div>
+
+    {!now.error && (
+        <div class="now__footer">
+            <a
+                href={`https://github.com/${GITHUB_USER}?tab=repositories&sort=updated`}
+                class="now__footer-link"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                ↗ ALL REPOS ON github.com/{GITHUB_USER}
+            </a>
+        </div>
+    )}
+</section>
+
+<style>
+    :global(.now__table) {
+        border-top: 2px solid var(--border);
+        container-type: inline-size;
+    }
+
+    :global(.now__row) {
+        display: flex;
+        align-items: stretch;
+        border-bottom: 1px solid var(--border);
+        min-height: 140px;
+    }
+
+    :global(.now__row:last-child) {
+        border-bottom: none;
+    }
+
+    :global(.now__cell) {
+        padding: 20px 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    :global(.now__cell--status) {
+        width: 140px;
+        flex-shrink: 0;
+        border-right: 1px solid var(--border);
+    }
+
+    :global(.now__row--active .now__cell--status) {
+        background-color: var(--inverse-bg);
+        color: var(--inverse-fg);
+    }
+
+    :global(.now__cell--project) {
+        width: 300px;
+        flex-shrink: 0;
+        border-right: 1px solid var(--border);
+    }
+
+    :global(.now__cell--what) {
+        flex: 1;
+        border-right: 1px solid var(--border);
+    }
+
+    :global(.now__cell--since) {
+        width: 140px;
+        flex-shrink: 0;
+        align-items: flex-end;
+    }
+
+    :global(.now__cell-label) {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        opacity: 0.6;
+    }
+
+    :global(.now__cell-label--right) {
+        text-align: right;
+    }
+
+    :global(.now__cell-label--dim) {
+        opacity: 0.5;
+    }
+
+    :global(.now__cell-value) {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    :global(.now__cell-value--right) {
+        text-align: right;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    :global(.now__project-name) {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--fg);
+        letter-spacing: -0.01em;
+        line-height: 1.1;
+    }
+
+    :global(a.now__project-name--link) {
+        color: var(--fg);
+        text-decoration: none;
+        border-bottom: 2px solid transparent;
+        transition: border-color 0.1s;
+    }
+
+    :global(a.now__project-name--link:hover) {
+        border-bottom-color: var(--fg);
+    }
+
+    .now__footer {
+        display: flex;
+        justify-content: flex-end;
+        padding: 16px 0 0;
+    }
+
+    .now__footer-link {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--fg);
+        padding: 10px 16px;
+        border: 1px solid var(--fg);
+        transition: background-color 0.1s, color 0.1s;
+    }
+
+    .now__footer-link:hover {
+        background-color: var(--fg);
+        color: var(--bg);
+    }
+
+    :global(.now__project-meta) {
+        font-size: 11px;
+        font-weight: 500;
+        opacity: 0.6;
+        margin-top: 6px;
+    }
+
+    :global(.now__cell-body) {
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 1.4;
+    }
+
+    @container (max-width: 900px) {
+        :global(.now__row) {
+            flex-wrap: wrap;
+            min-height: 0;
+        }
+        :global(.now__cell--status) {
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid var(--border);
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+        }
+        :global(.now__cell--project) {
+            width: 100%;
+            border-right: none;
+            border-bottom: 1px solid var(--border);
+            padding: 16px;
+        }
+        :global(.now__cell--what) {
+            border-right: none;
+            border-bottom: 1px solid var(--border);
+            padding: 16px;
+        }
+        :global(.now__cell--since) {
+            width: 100%;
+            align-items: flex-start;
+            padding: 12px 16px;
+        }
+        :global(.now__cell-value--right),
+        :global(.now__cell-label--right) {
+            text-align: left;
+        }
+    }
+</style>

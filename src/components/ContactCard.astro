@@ -1,0 +1,19 @@
+---
+const { index, name, handle, href } = Astro.props as {
+    index: string;
+    name: string;
+    handle: string;
+    href: string;
+};
+const padded = `[${index.padStart(2, "0")}]`;
+---
+<a href={href} class="contact__card" target="_blank" rel="noopener noreferrer">
+    <div class="contact__card-header">
+        <span>{padded}</span>
+        <span>↗</span>
+    </div>
+    <div>
+        <div class="contact__card-name">{name}</div>
+        <div class="contact__card-handle">{handle}</div>
+    </div>
+</a>

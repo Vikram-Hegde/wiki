@@ -1,0 +1,58 @@
+---
+import { BUILD_DATE_HUMAN, gitHash, gitDirty } from "../lib/build";
+---
+<section class="focus" aria-label="Current focus">
+    <div class="focus__inner">
+        <div class="focus__left">
+            <span>// FOCUS</span>
+            <span class="focus__dim">intrinsic web design, container queries, type systems</span>
+        </div>
+        <div class="focus__right">
+            <span class="focus__dim">UPDATED {BUILD_DATE_HUMAN}</span>
+            <span class="focus__chip">{gitHash}{gitDirty ? "*" : ""}</span>
+        </div>
+    </div>
+</section>
+
+<style>
+    .focus {
+        border-top: 2px solid var(--border);
+        padding: 14px var(--wrapper-padding);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        container-type: inline-size;
+    }
+
+    .focus__inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .focus__left,
+    .focus__right {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+    }
+
+    .focus__dim {
+        opacity: 0.6;
+    }
+
+    .focus__chip {
+        background-color: var(--inverse-bg);
+        color: var(--inverse-fg);
+        padding: 2px 8px;
+    }
+
+    @container (max-width: 720px) {
+        .focus__inner {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+    }
+</style>

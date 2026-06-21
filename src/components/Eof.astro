@@ -1,0 +1,43 @@
+---
+import {
+    BUILD_DATE_HUMAN,
+    BUILD_TIME_HUMAN,
+    gitHash,
+    gitDirty,
+} from "../lib/build";
+
+const SHOW_WRITING = false;
+const SECTION_COUNT = SHOW_WRITING ? 9 : 8;
+---
+<section class="eof" aria-hidden="true">
+    <pre class="eof__pre">{`// ════════════════════════════════════════════════════════════════════
+//  EOF — index.html rendered. ${SECTION_COUNT} sections. 0 dependencies.
+//  Built: ${BUILD_DATE_HUMAN} ${BUILD_TIME_HUMAN}  ·  Commit: ${gitHash}${gitDirty ? " (dirty)" : ""}
+//  "Make it work, make it right, make it small."  — k.n.
+// ════════════════════════════════════════════════════════════════════`}</pre>
+</section>
+
+<style>
+    .eof {
+        padding: 24px var(--wrapper-padding) 0;
+        container-type: inline-size;
+    }
+
+    .eof__pre {
+        font-family: inherit;
+        font-size: 11px;
+        line-height: 1.6;
+        color: var(--fg);
+        opacity: 0.5;
+        white-space: pre;
+        margin: 0;
+    }
+
+    @container (max-width: 480px) {
+        .eof__pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 10px;
+        }
+    }
+</style>

@@ -1,0 +1,161 @@
+---
+import type { Stack } from "../lib/github";
+import { pluralize } from "../lib/format";
+import SectionHeader from "./SectionHeader.astro";
+
+const { stack } = Astro.props as { stack: Stack };
+
+const meta = stack.error
+    ? "OFFLINE / FALLBACK"
+    : `${stack.languages.length} LANGUAGES / ${stack.totalRepos} PUBLIC REPOS / PULLED FROM GITHUB`;
+---
+<section class="stack" aria-labelledby="stack-label">
+    <SectionHeader id="stack-label" title="§ STACK.MD" meta={meta} />
+
+    <div class="stack__table">
+        {stack.error ? (
+            <div class="stack__row">
+                <div class="stack__num">--</div>
+                <div class="stack__name">UNKNOWN</div>
+                <div class="stack__desc">Could not derive a stack — {stack.error}</div>
+                <div class="stack__year">↻ RETRY BUILD</div>
+            </div>
+        ) : (
+            stack.languages.map((lang, i) => (
+                <div class="stack__row">
+                    <div class="stack__num">{String(i + 1).padStart(2, "0")}</div>
+                    <div class="stack__name">{lang.name}</div>
+                    <div class="stack__desc">
+                        {pluralize(lang.count, "repo", "repos")}
+                        {" / "}
+                        <span class:list={["stack__desc-active", { "stack__desc-active--live": lang.activeCount > 0 }]}>
+                            {pluralize(lang.activeCount, "active", "active")}
+                        </span>
+                        {lang.stars > 0 && (
+                            <>
+                                {" / "}★ {lang.stars}
+                            </>
+                        )}
+                    </div>
+                </div>
+            ))
+        )}
+    </div>
+</section>
+
+<style>
+    .stack__table {
+        border-top: 2px solid var(--border);
+        container-type: inline-size;
+    }
+
+    .stack__row {
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid var(--border);
+        min-height: 64px;
+    }
+
+    .stack__row:last-child {
+        border-bottom: none;
+    }
+
+    .stack__num {
+        width: 60px;
+        flex-shrink: 0;
+        padding: 0 16px;
+        font-size: 14px;
+        font-weight: 700;
+        border-right: 1px solid var(--border);
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    .stack__name {
+        width: 280px;
+        flex-shrink: 0;
+        padding: 0 24px;
+        font-size: 24px;
+        font-weight: 800;
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    .stack__desc {
+        flex: 1;
+        padding: 0 24px;
+        font-size: 13px;
+        font-weight: 500;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 0;
+    }
+
+    .stack__desc-active {
+        font-weight: 700;
+    }
+
+    .stack__desc-active--live {
+        background-color: var(--inverse-bg);
+        color: var(--inverse-fg);
+        padding: 2px 6px;
+    }
+
+    .stack__year {
+        width: 140px;
+        flex-shrink: 0;
+        padding: 0 16px;
+        font-size: 12px;
+        font-weight: 600;
+        text-align: right;
+        border-left: 1px solid var(--border);
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    @container (max-width: 800px) {
+        .stack__row {
+            flex-wrap: wrap;
+            min-height: 0;
+        }
+        .stack__num {
+            width: 60px;
+            border-right: none;
+            height: 48px;
+        }
+        .stack__name {
+            width: auto;
+            flex: 1;
+            border-right: none;
+            border-top: 1px solid var(--border);
+            height: 48px;
+            font-size: 20px;
+        }
+        .stack__desc {
+            width: 100%;
+            padding: 12px 16px;
+            border-top: 1px solid var(--border);
+            display: block;
+            height: auto;
+        }
+        .stack__desc-active {
+            display: inline-block;
+        }
+        .stack__year {
+            width: 100%;
+            text-align: left;
+            border-left: none;
+            border-top: 1px solid var(--border);
+            justify-content: flex-start;
+            padding: 12px 16px;
+        }
+        .stack__row:last-child .stack__year {
+            border-top: none;
+        }
+    }
+</style>

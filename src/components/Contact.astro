@@ -1,0 +1,99 @@
+---
+import SectionHeader from "./SectionHeader.astro";
+import ContactCard from "./ContactCard.astro";
+
+const GITHUB_USER = "Vikram-Hegde";
+
+const channels = [
+    { index: "1", name: "X / TWITTER", handle: "@_vikramhegde_", href: "https://x.com/_vikramhegde_" },
+    { index: "2", name: "GITHUB", handle: "vikram-hegde", href: `https://github.com/${GITHUB_USER}` },
+    { index: "3", name: "LINKEDIN", handle: "vikramcodes", href: "https://www.linkedin.com/in/vikramcodes" },
+];
+---
+<section class="contact" id="contact" aria-labelledby="contact-label">
+    <SectionHeader
+        id="contact-label"
+        title="§ CONTACT.LINKS"
+        meta="3 CHANNELS"
+    />
+
+    <div class="contact__grid">
+        {channels.map((c) => (
+            <ContactCard
+                index={c.index}
+                name={c.name}
+                handle={c.handle}
+                href={c.href}
+            />
+        ))}
+    </div>
+</section>
+
+<style>
+    .contact {
+        container-type: inline-size;
+    }
+
+    .contact__grid {
+        border-top: 2px solid var(--border);
+        display: flex;
+    }
+
+    :global(.contact__card) {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 32px 24px;
+        border-right: 2px solid var(--border);
+        min-height: 200px;
+        transition: background-color 0.1s, color 0.1s;
+        color: var(--fg);
+        text-decoration: none;
+    }
+
+    :global(.contact__card:last-child) {
+        border-right: none;
+    }
+
+    :global(.contact__card:hover) {
+        background-color: var(--inverse-bg);
+        color: var(--inverse-fg);
+    }
+
+    :global(.contact__card-header) {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    :global(.contact__card-name) {
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    :global(.contact__card-handle) {
+        font-size: 13px;
+        font-weight: 500;
+        margin-top: 8px;
+    }
+
+    @container (max-width: 720px) {
+        .contact__grid {
+            flex-direction: column;
+        }
+        :global(.contact__card) {
+            border-right: none;
+            border-bottom: 2px solid var(--border);
+            min-height: 160px;
+        }
+        :global(.contact__card:last-child) {
+            border-bottom: none;
+        }
+    }
+</style>
