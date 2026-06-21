@@ -9,7 +9,7 @@ const meta = stack.error
     ? "OFFLINE / FALLBACK"
     : `${stack.languages.length} LANGUAGES / ${stack.totalRepos} PUBLIC REPOS / PULLED FROM GITHUB`;
 ---
-<section class="stack" aria-labelledby="stack-label">
+<section class="stack" id="stack" aria-labelledby="stack-label">
     <SectionHeader id="stack-label" title="§ STACK.MD" meta={meta} />
 
     <div class="stack__table">
