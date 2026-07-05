@@ -4,7 +4,7 @@ Personal site of [Vikram Hegde](https://vikram.wiki/) — frontend engineer, des
 
 A brutalist single-page site. One `index.astro`. Vanilla CSS. JetBrains Mono for everything. No frameworks, no tracking, no cookies, no analytics.
 
-The `§ NOW.LOG` and `§ STACK.MD` sections pull live data from the GitHub API at build time — the page is a real README for the work, not a hand-curated brochure.
+The `NOW.LOG` and `STACK.MD` sections pull live data from the GitHub API at build time — the page is a real README for the work, not a hand-curated brochure.
 
 ## Stack
 
@@ -17,7 +17,7 @@ The `§ NOW.LOG` and `§ STACK.MD` sections pull live data from the GitHub API a
 ## Features
 
 - **Dark mode** via `prefers-color-scheme` — no toggle, just follows system
-- **Live GitHub data** — `§ NOW.LOG` shows the 4 most recently pushed repos; `§ STACK.MD` aggregates languages across all public repos, sorted by recent activity
+- **Live GitHub data** — `NOW.LOG` shows the 4 most recently pushed repos; `STACK.MD` aggregates languages across all public repos, sorted by recent activity
 - **Build-time honesty** — every metric on the page (build date, commit hash, section count) is computed at build. No fakes.
 - **Zero JS shipped** — the page is fully static HTML + CSS
 
